@@ -15,6 +15,8 @@ extern int R_SW;
 extern int R_DT;
 extern int R_CLK;
 
+extern int ledPin;
+
 // Encoder counters
 extern volatile int leftCounter;
 extern volatile int rightCounter;
@@ -39,5 +41,9 @@ void rotateSteps( int direction, int pins[], const char* motorName);
 void stepMotor(int direction, int pins[], const char* motorName);
 
 void stopMotor(int pins[]);
+
+
+// firmware modes
+bool calibration();
 
 #endif

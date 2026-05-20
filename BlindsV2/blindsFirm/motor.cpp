@@ -10,6 +10,8 @@ int rcurrentPosition = 0;
 int leftmotorCounter = 0;
 int rightmotorCounter = 0;
 
+int syncedMotorCounter = 0;
+
 #define STEPS_INCREMENT 64 // Number of steps for a full rotation (adjust as needed)
 
 // Half-step sequence
@@ -24,6 +26,7 @@ int stepSequence[8][4] = {
     {0, 0, 0, 1},
     {1, 0, 0, 1}
 };
+
 
 void setupStepper(int pins[]) {
 
