@@ -14,14 +14,20 @@ int R_CLK = 35;
 
 //Stepper Left
 int leftStepperPins[4] = {4, 16, 17, 5};
-int rightStepperPins[4] = {19, 21, 22, 23};
+int rightStepperPins[4] = {18, 19, 22, 23};
 
-int calibrateButtonPin = 18;
-int syncButtonPin = 15;
-int automaticButtonPin = 25;
+int calibrateButtonPin = 15;
+int syncButtonPin = 12;
+int automaticButtonPin = 21;
 
 int ledPin = 2;
 int ldrPin = 34;
+
+int D_SCL = 13;
+int D_SDA = 25;
+
+//I2C
+
 
 
 volatile int calibrationState = 0; // 0: Not calibrated, 1: Calibrating , 2: Calibrated
@@ -44,28 +50,38 @@ int lastRightCounter = 0;
 
 
 
-void instantControl(int swPin, const char* motorName) {
+void instantControl(int swPin, const char* motorName, bool calibrationMode = false) {
     
       delay(50); // debounce
       Serial.println("Instant control triggered");
-      
       noInterrupts();
-      if ((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 0) {
-          if (strcmp(motorName, "left") == 0) {
-              leftCounter = left_upper_bound/2; // Move to full open position
-          } else if (strcmp(motorName, "right") == 0) {
-              rightCounter = right_upper_bound/2; // Move to full open position
-              
-          }
 
-      } else if((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 1) {
+      if (calibrationMode) {
           if (strcmp(motorName, "left") == 0) {
               leftCounter = 0; // Move to full closed position
               leftBlindsState = 0; // Update state to closed
           } else if (strcmp(motorName, "right") == 0) {
               rightCounter = 0; // Move to full closed position
-              
+              rightBlindsState = 0; // Update state to closed
           }
+      } else {
+        if ((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 0) {
+            if (strcmp(motorName, "left") == 0) {
+                leftCounter = left_upper_bound/2; // Move to full open position
+            } else if (strcmp(motorName, "right") == 0) {
+                rightCounter = right_upper_bound/2; // Move to full open position
+                
+            }
+
+        } else if((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 1) {
+            if (strcmp(motorName, "left") == 0) {
+                leftCounter = 0; // Move to full closed position
+                leftBlindsState = 0; // Update state to closed
+            } else if (strcmp(motorName, "right") == 0) {
+                rightCounter = 0; // Move to full closed position
+                rightBlindsState = 0; // Update state to closed
+            }
+        }
       }
       interrupts();
 
@@ -90,20 +106,37 @@ void updateBlindsState(const char* motorName, long targetPosition) {
 
 int readSunlight() {
     int ldrValue = analogRead(ldrPin);
-    Serial.print("LDR Value: ");
-    Serial.println(ldrValue);
     return ldrValue;
 }
 void automaticControl() {
     int ldrValue = readSunlight();
     if (ldrValue > 1500) { // Threshold for darkness, adjust as needed
         // Open blinds
-        leftCounter = left_upper_bound/2;
-        rightCounter = right_upper_bound/2;
+        if(leftBlindsState == 0) {
+            leftCounter = left_upper_bound/2;
+            leftBlindsState = 1; // Update state to open
+            Serial.println("Automatic control: Opening left blinds");
+        }
+        if(rightBlindsState == 0) {
+            rightCounter = right_upper_bound/2;
+            rightBlindsState = 1; // Update state to open
+            Serial.println("Automatic control: Opening right blinds");
+        }
+        
     } else {
         // Close blinds
-        leftCounter = 0;
-        rightCounter = 0;
+        if(leftBlindsState == 1) {
+            leftCounter = 0;
+            leftBlindsState = 0; // Update state to closed
+            Serial.println("Automatic control: Closing left blinds");
+        }
+        if(rightBlindsState == 1) {
+            rightCounter = 0;
+            rightBlindsState = 0; // Update state to closed
+            Serial.println("Automatic control: Closing right blinds");
+        }
+    
+        
     }
 }
 
@@ -145,7 +178,7 @@ void loop() {
 
 
   //Sync control mode
-    if (digitalRead(syncButtonPin) == LOW || digitalRead(L_SW) == LOW && digitalRead(R_SW) == LOW) {
+    if (digitalRead(syncButtonPin) == LOW) {
       delay(50); // debounce
       if (syncState == false) {
         syncState = true;
@@ -157,13 +190,17 @@ void loop() {
     }
 
     if (digitalRead(automaticButtonPin) == LOW) {
-      delay(50); // debounce
+      while (digitalRead(automaticButtonPin) == LOW) {
+        delay(10); // debounce
+      }
+      Serial.println("Automatic mode: False &&&&&&&&&&&&&&&&&&&");
+      
       if (automaticState == false) {
         automaticState = true;
-        Serial.println("Automatic mode: True");
+        Serial.println("Automatic mode: True -----------------");
       } else {
         automaticState = false;
-        Serial.println("Automatic mode: False");
+        Serial.println("Automatic mode: False &&&&&&&&&&&&&&&&&&&");
       }
     }
 

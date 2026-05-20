@@ -111,6 +111,8 @@ bool calibration() {
 	rightEncoderCalibratedState = 0;
 	calibrateMotor("left", L_SW);
 	calibrateMotor("right", R_SW);
+	instantControl(L_SW, "left", true); // Move left blinds to closed position
+	instantControl(R_SW, "right", true); // Move right blinds to closed position
 	flashLED();
 	syncState = oldSyncState; // Restore original synchronization state
 	return true;

@@ -47,7 +47,7 @@ void setupEncoder(int CLK, int DT, int SW);
 
 // Stepper Motor Pins
 extern int leftStepperPins[];
-int extern rightStepperPins[];
+extern int rightStepperPins[];
 
 
 // Stepper Functions
@@ -64,5 +64,7 @@ void stopMotor(int pins[]);
 
 // firmware modes
 bool calibration();
+
+void instantControl(int swPin, const char* motorName, bool calibrationMode);
 
 #endif
