@@ -3,7 +3,7 @@
 int leftCurrentStep = 0;
 int rightCurrentStep = 0;
 
-int stepDelay = 2;
+int stepDelay = 5;
 int lcurrentPosition = 0;
 int rcurrentPosition = 0;
 
@@ -12,7 +12,7 @@ int rightMotorCounter = 0;
 
 int syncedMotorCounter = 0;
 
-#define STEPS_INCREMENT 64 // Number of steps for a full rotation (adjust as needed)
+#define STEPS_INCREMENT 1024 // Number of steps for a full rotation (adjust as needed)
 
 // Half-step sequence
 int stepSequence[8][4] = {
@@ -73,37 +73,75 @@ void stepMotor(int direction, int pins[], const char* motorName) {
 
 }
 
-void rotateSteps( int direction, int pins[], const char* motorName) {
+void rotateSteps(int steps, int direction, int pins[], const char* motorName) {
 
-    for (int i = 0; i < STEPS_INCREMENT; i++) {
+    for (int i = 0; i < steps; i++) {
         stepMotor(direction, pins, motorName);
     }
 }
 
 void updateMotor(int targetPosition, int pins[], const char* motorName) {
     if (strcmp(motorName, "left") == 0) {
-        if (leftMotorCounter < targetPosition) {
-            rotateSteps(1, pins, motorName);
-            leftMotorCounter = leftMotorCounter + STEPS_PER_ENCODER_TICK;
+        int difference = targetPosition - leftMotorCounter;
+
+        if (moveToken == 0) {
+            moveToken = 1; // Left motor gets the token
         }
-        else if (leftMotorCounter > targetPosition) {
-            rotateSteps(-1, pins, motorName);
-            leftMotorCounter = leftMotorCounter - STEPS_PER_ENCODER_TICK;
-        } else {
+
+        if (moveToken == 2) {
+            Serial.println("Right motor moving, left motor waiting");
+            stopMotor(pins);
+        } else if (difference > 0) {
+
+            int stepsToMove = min(abs(difference), STEPS_INCREMENT);
+
+            rotateSteps(stepsToMove, 1, pins, motorName);
+
+            leftMotorCounter += stepsToMove;
+        }
+        else if (difference < 0) {
+
+            int stepsToMove = min(abs(difference), STEPS_INCREMENT);
+
+            rotateSteps(stepsToMove, -1, pins, motorName);
+
+            leftMotorCounter -= stepsToMove;
+        }
+        else {
+            moveToken = 0;
             stopMotor(pins);
         }
     }
     else if (strcmp(motorName, "right") == 0) {
-        if (rightMotorCounter < targetPosition) {
-            rotateSteps(1, pins, motorName);
-            rightMotorCounter = rightMotorCounter + STEPS_PER_ENCODER_TICK;
+        if (moveToken == 0) {
+            moveToken = 2; // Right motor gets the token
         }
-        else if (rightMotorCounter > targetPosition) {
-            rotateSteps(-1, pins, motorName);
-            rightMotorCounter = rightMotorCounter - STEPS_PER_ENCODER_TICK;
-        } else {
+
+        int difference = targetPosition - rightMotorCounter;
+        if (moveToken == 1) {
+            Serial.println("Left motor moving, right motor waiting");
+            stopMotor(pins);
+        } else if (difference > 0) {
+
+            int stepsToMove = min(abs(difference), STEPS_INCREMENT);
+
+            rotateSteps(stepsToMove, 1, pins, motorName);
+
+            rightMotorCounter += stepsToMove;
+        }
+        else if (difference < 0) {
+
+            int stepsToMove = min(abs(difference), STEPS_INCREMENT);
+
+            rotateSteps(stepsToMove, -1, pins, motorName);
+
+            rightMotorCounter -= stepsToMove;
+        }
+        else {
+            moveToken = 0;
             stopMotor(pins);
         }
+
     } 
 
 

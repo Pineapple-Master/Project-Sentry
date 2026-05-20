@@ -48,6 +48,7 @@ volatile int syncedCounter = 0;
 int lastLeftCounter = 0;
 int lastRightCounter = 0;
 
+volatile int moveToken = 0; // 0: No movement, 1: leftMotor moving, 2: rightMotor moving
 
 
 void instantControl(int swPin, const char* motorName, bool calibrationMode = false) {
@@ -68,8 +69,10 @@ void instantControl(int swPin, const char* motorName, bool calibrationMode = fal
         if ((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 0) {
             if (strcmp(motorName, "left") == 0) {
                 leftCounter = left_upper_bound/2; // Move to full open position
+                leftBlindsState = 1;
             } else if (strcmp(motorName, "right") == 0) {
                 rightCounter = right_upper_bound/2; // Move to full open position
+                rightBlindsState = 1;
                 
             }
 
@@ -179,7 +182,9 @@ void loop() {
 
   //Sync control mode
     if (digitalRead(syncButtonPin) == LOW) {
-      delay(50); // debounce
+      while (digitalRead(syncButtonPin) == LOW) {
+        delay(10); // debounce
+      }
       if (syncState == false) {
         syncState = true;
         Serial.println("Sync: True");
@@ -207,6 +212,27 @@ void loop() {
 
 
     
+
+    
+    //Instant control mode
+    if (digitalRead(L_SW) == LOW) {
+      while (digitalRead(L_SW) == LOW) {
+        delay(10);
+      }
+      instantControl(L_SW, "left");
+    } 
+    if (digitalRead(R_SW) == LOW) {
+      while (digitalRead(R_SW) == LOW) {
+        delay(10);
+      }
+      instantControl(R_SW, "right");
+    }
+
+    //Automatic control mode
+    if (automaticState) {
+      automaticControl();
+    }
+
     long leftTarget, rightTarget;
     noInterrupts();
     if (syncState) {
@@ -215,22 +241,6 @@ void loop() {
     leftTarget = leftCounter;
     rightTarget = rightCounter;
     interrupts();
-
-    
-    //Instant control mode
-    if (digitalRead(L_SW) == LOW) {
-      delay(50); // debounce
-      instantControl(L_SW, "left");
-    } 
-    if (digitalRead(R_SW) == LOW) {
-      delay(50); // debounce
-      instantControl(R_SW, "right");
-    }
-
-    //Automatic control mode
-    if (automaticState) {
-      automaticControl();
-    }
 
     
     updateBlindsState("left", leftTarget);

@@ -49,6 +49,7 @@ void setupEncoder(int CLK, int DT, int SW);
 extern int leftStepperPins[];
 extern int rightStepperPins[];
 
+extern volatile int moveToken; // 0: No movement, 1: leftMotor moving, 2: rightMotor moving
 
 // Stepper Functions
 void setupStepper(int pins[]);
