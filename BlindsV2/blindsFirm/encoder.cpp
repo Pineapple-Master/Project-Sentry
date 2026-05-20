@@ -1,16 +1,18 @@
 #include "globals.h"
 
-int upper_bound = 10000; // Example bound for encoder counts, adjust as needed
+int volatile left_upper_bound = 10000; // Example bound for encoder counts, adjust as needed
+int volatile right_upper_bound = 10000; // Example bound for encoder counts, adjust as needed
 
 // Interrupt service routines
 void IRAM_ATTR leftEncoderISR() {
     if (digitalRead(L_CLK) == HIGH) {
         if (digitalRead(L_DT) != digitalRead(L_CLK)) {
-            if (leftCounter > 0) {
+            const int lowerBound = (leftEncoderCalibratedState == 0) ? -9999 : 0;
+            if (leftCounter > lowerBound) {
                 leftCounter -= STEPS_PER_ENCODER_TICK;
             }
         } else {
-            if (leftCounter < upper_bound) {
+            if (leftCounter < left_upper_bound) {
                 leftCounter += STEPS_PER_ENCODER_TICK;
             }
         }
@@ -21,11 +23,12 @@ void IRAM_ATTR leftEncoderISR() {
 void IRAM_ATTR rightEncoderISR() {
     if (digitalRead(R_CLK) == HIGH) {
         if (digitalRead(R_DT) != digitalRead(R_CLK)) {
-            if (rightCounter > 0) {
+            const int lowerBound = (rightEncoderCalibratedState == 0) ? -9999 : 0;
+            if (rightCounter > lowerBound) {
                 rightCounter -= STEPS_PER_ENCODER_TICK;
             }
         } else {
-            if (rightCounter < upper_bound) {
+            if (rightCounter < right_upper_bound) {
                 rightCounter += STEPS_PER_ENCODER_TICK;
             }
         }

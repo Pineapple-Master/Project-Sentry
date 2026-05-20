@@ -21,6 +21,24 @@ extern int ledPin;
 extern volatile int leftCounter;
 extern volatile int rightCounter;
 
+// Bounds
+extern volatile int left_upper_bound;
+extern volatile int right_upper_bound;
+
+// Motor step counters
+extern int leftMotorCounter;
+extern int rightMotorCounter;
+
+extern bool syncState;
+
+extern volatile int calibrationState;
+extern int calibrateButtonPin;
+
+extern volatile int leftEncoderCalibratedState;
+extern volatile int rightEncoderCalibratedState;
+
+
+
 // Interrupt service routine prototypes
 void leftEncoderISR();
 void rightEncoderISR();
@@ -28,7 +46,8 @@ void rightEncoderISR();
 void setupEncoder(int CLK, int DT, int SW);
 
 // Stepper Motor Pins
-extern int stepperPins[4];
+extern int leftStepperPins[];
+int extern rightStepperPins[];
 
 
 // Stepper Functions

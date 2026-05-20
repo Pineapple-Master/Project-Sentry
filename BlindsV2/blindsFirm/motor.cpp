@@ -7,8 +7,8 @@ int stepDelay = 2;
 int lcurrentPosition = 0;
 int rcurrentPosition = 0;
 
-int leftmotorCounter = 0;
-int rightmotorCounter = 0;
+int leftMotorCounter = 0;
+int rightMotorCounter = 0;
 
 int syncedMotorCounter = 0;
 
@@ -82,25 +82,25 @@ void rotateSteps( int direction, int pins[], const char* motorName) {
 
 void updateMotor(int targetPosition, int pins[], const char* motorName) {
     if (strcmp(motorName, "left") == 0) {
-        if (leftmotorCounter < targetPosition) {
+        if (leftMotorCounter < targetPosition) {
             rotateSteps(1, pins, motorName);
-            leftmotorCounter = leftmotorCounter + STEPS_PER_ENCODER_TICK;
+            leftMotorCounter = leftMotorCounter + STEPS_PER_ENCODER_TICK;
         }
-        else if (leftmotorCounter > targetPosition) {
+        else if (leftMotorCounter > targetPosition) {
             rotateSteps(-1, pins, motorName);
-            leftmotorCounter = leftmotorCounter - STEPS_PER_ENCODER_TICK;
+            leftMotorCounter = leftMotorCounter - STEPS_PER_ENCODER_TICK;
         } else {
             stopMotor(pins);
         }
     }
     else if (strcmp(motorName, "right") == 0) {
-        if (rightmotorCounter < targetPosition) {
+        if (rightMotorCounter < targetPosition) {
             rotateSteps(1, pins, motorName);
-            rightmotorCounter = rightmotorCounter + STEPS_PER_ENCODER_TICK;
+            rightMotorCounter = rightMotorCounter + STEPS_PER_ENCODER_TICK;
         }
-        else if (rightmotorCounter > targetPosition) {
+        else if (rightMotorCounter > targetPosition) {
             rotateSteps(-1, pins, motorName);
-            rightmotorCounter = rightmotorCounter - STEPS_PER_ENCODER_TICK;
+            rightMotorCounter = rightMotorCounter - STEPS_PER_ENCODER_TICK;
         } else {
             stopMotor(pins);
         }
