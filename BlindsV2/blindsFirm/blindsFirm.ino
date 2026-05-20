@@ -38,6 +38,53 @@ volatile int syncedCounter = 0;
 int lastLeftCounter = 0;
 int lastRightCounter = 0;
 
+
+
+void instantControl(int swPin, const char* motorName) {
+    
+      delay(50); // debounce
+      Serial.println("Instant control triggered");
+      
+      noInterrupts();
+      if ((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 0) {
+          if (strcmp(motorName, "left") == 0) {
+              leftCounter = left_upper_bound/2; // Move to full open position
+          } else if (strcmp(motorName, "right") == 0) {
+              rightCounter = right_upper_bound/2; // Move to full open position
+              
+          }
+
+      } else if((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 1) {
+          if (strcmp(motorName, "left") == 0) {
+              leftCounter = 0; // Move to full closed position
+              leftBlindsState = 0; // Update state to closed
+          } else if (strcmp(motorName, "right") == 0) {
+              rightCounter = 0; // Move to full closed position
+              
+          }
+      interrupts();
+      }
+
+}
+
+void updateBlindsState(const char* motorName, long targetPosition) {
+    if (strcmp(motorName, "left") == 0) {
+        if (targetPosition >= (.2 * left_upper_bound) && targetPosition <= (.8 * left_upper_bound)) {
+            leftBlindsState = 1; // Open
+        } else {
+            leftBlindsState = 0; // Closed
+        }
+    } else if (strcmp(motorName, "right") == 0) {
+        if (targetPosition >= (.2 * right_upper_bound) && targetPosition <= (.8 * right_upper_bound)) {
+            rightBlindsState = 1; // Open
+        } else {
+            rightBlindsState = 0; // Closed
+        }
+    }
+
+}
+
+
 void setup() {
     Serial.begin(115200);
 
@@ -97,6 +144,8 @@ void loop() {
     rightTarget = rightCounter;
     interrupts();
 
+    
+
     if (digitalRead(L_SW) == LOW) {
       delay(50); // debounce
       instantControl(L_SW, "left");
@@ -105,7 +154,8 @@ void loop() {
       delay(50); // debounce
       instantControl(R_SW, "right");
     }
-
+    updateBlindsState("left", leftTarget);
+    updateBlindsState("right", rightTarget);
     
     updateMotor(leftTarget, leftStepperPins, "left");
     updateMotor(rightTarget, rightStepperPins, "right");
@@ -114,31 +164,3 @@ void loop() {
 
 }
 
-void instantControl(int swPin, const char* motorName) {
-    
-      delay(50); // debounce
-      Serial.println("Instant control triggered");
-      
-      noInterrupts();
-      if ((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 0) {
-          if (strcmp(motorName, "left") == 0) {
-              leftCounter = left_upper_bound/2; // Move to full open position
-              leftBlindsState = 1; // Update state to open
-          } else if (strcmp(motorName, "right") == 0) {
-              rightCounter = right_upper_bound/2; // Move to full open position
-              rightBlindsState = 1; // Update state to open
-          }
-
-      } else if((strcmp(motorName, "left") == 0 ? leftBlindsState : rightBlindsState) == 1) {
-          if (strcmp(motorName, "left") == 0) {
-              leftCounter = 0; // Move to full closed position
-              leftBlindsState = 0; // Update state to closed
-          } else if (strcmp(motorName, "right") == 0) {
-              rightCounter = 0; // Move to full closed position
-              rightBlindsState = 0; // Update state to closed
-          }
-      }
-      interrupts();
-
-    
-}
