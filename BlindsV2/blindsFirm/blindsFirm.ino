@@ -18,11 +18,15 @@ int rightStepperPins[4] = {19, 21, 22, 23};
 
 int calibrateButtonPin = 18;
 int syncButtonPin = 15;
+int automaticButtonPin = 25;
 
 int ledPin = 2;
+int ldrPin = 34;
+
 
 volatile int calibrationState = 0; // 0: Not calibrated, 1: Calibrating , 2: Calibrated
 bool syncState = false; // 0: Not synced, 1: Syncing, 2: Synced
+bool automaticState = false; // 0: Manual, 1: Automatic
 
 int leftBlindsState = 0; // 0: Closed, 1: Open
 int rightBlindsState = 0; // 0: Closed, 1: Open
@@ -62,8 +66,8 @@ void instantControl(int swPin, const char* motorName) {
               rightCounter = 0; // Move to full closed position
               
           }
-      interrupts();
       }
+      interrupts();
 
 }
 
@@ -84,6 +88,26 @@ void updateBlindsState(const char* motorName, long targetPosition) {
 
 }
 
+int readSunlight() {
+    int ldrValue = analogRead(ldrPin);
+    Serial.print("LDR Value: ");
+    Serial.println(ldrValue);
+    return ldrValue;
+}
+void automaticControl() {
+    int ldrValue = readSunlight();
+    if (ldrValue > 1500) { // Threshold for darkness, adjust as needed
+        // Open blinds
+        leftCounter = left_upper_bound/2;
+        rightCounter = right_upper_bound/2;
+    } else {
+        // Close blinds
+        leftCounter = 0;
+        rightCounter = 0;
+    }
+}
+
+
 
 void setup() {
     Serial.begin(115200);
@@ -91,7 +115,7 @@ void setup() {
     pinMode(ledPin, OUTPUT);
     pinMode(calibrateButtonPin, INPUT_PULLUP);
     pinMode(syncButtonPin, INPUT_PULLUP);
-
+    pinMode(automaticButtonPin, INPUT_PULLUP);
     setupEncoder(L_CLK, L_DT, L_SW);
     setupEncoder(R_CLK, R_DT, R_SW);
     
@@ -104,6 +128,7 @@ void setup() {
 }
 
 void loop() {
+    //Calibration mode
     if (calibrationState == 0 || digitalRead(calibrateButtonPin) == LOW) {
       delay(50); // debounce
       calibrationState = 1;
@@ -118,7 +143,9 @@ void loop() {
       
     }
 
-    if (digitalRead(syncButtonPin) == LOW) {
+
+  //Sync control mode
+    if (digitalRead(syncButtonPin) == LOW || digitalRead(L_SW) == LOW && digitalRead(R_SW) == LOW) {
       delay(50); // debounce
       if (syncState == false) {
         syncState = true;
@@ -129,13 +156,21 @@ void loop() {
       }
     }
 
+    if (digitalRead(automaticButtonPin) == LOW) {
+      delay(50); // debounce
+      if (automaticState == false) {
+        automaticState = true;
+        Serial.println("Automatic mode: True");
+      } else {
+        automaticState = false;
+        Serial.println("Automatic mode: False");
+      }
+    }
+
 
 
     
-
     long leftTarget, rightTarget;
-
- 
     noInterrupts();
     if (syncState) {
       rightCounter = leftCounter;
@@ -145,7 +180,7 @@ void loop() {
     interrupts();
 
     
-
+    //Instant control mode
     if (digitalRead(L_SW) == LOW) {
       delay(50); // debounce
       instantControl(L_SW, "left");
@@ -154,13 +189,19 @@ void loop() {
       delay(50); // debounce
       instantControl(R_SW, "right");
     }
+
+    //Automatic control mode
+    if (automaticState) {
+      automaticControl();
+    }
+
+    
     updateBlindsState("left", leftTarget);
     updateBlindsState("right", rightTarget);
     
     updateMotor(leftTarget, leftStepperPins, "left");
     updateMotor(rightTarget, rightStepperPins, "right");
 
-    
+    readSunlight();
 
 }
-
