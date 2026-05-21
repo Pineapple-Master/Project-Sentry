@@ -89,7 +89,7 @@ void updateMotor(int targetPosition, int pins[], const char* motorName) {
         }
 
         if (moveToken == 2) {
-            Serial.println("Right motor moving, left motor waiting");
+            
             stopMotor(pins);
         } else if (difference > 0) {
 
@@ -119,7 +119,7 @@ void updateMotor(int targetPosition, int pins[], const char* motorName) {
 
         int difference = targetPosition - rightMotorCounter;
         if (moveToken == 1) {
-            Serial.println("Left motor moving, right motor waiting");
+            
             stopMotor(pins);
         } else if (difference > 0) {
 

@@ -1,7 +1,7 @@
 #include "globals.h"
 
-int volatile left_upper_bound = 10000; // Example bound for encoder counts, adjust as needed
-int volatile right_upper_bound = 10000; // Example bound for encoder counts, adjust as needed
+int volatile left_upper_bound = 1000000; // Example bound for encoder counts, adjust as needed
+int volatile right_upper_bound = 1000000; // Example bound for encoder counts, adjust as needed
 
 // Interrupt service routines
 void IRAM_ATTR leftEncoderISR() {

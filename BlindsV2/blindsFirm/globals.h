@@ -2,8 +2,20 @@
 #define GLOBALS_H
 
 #include <Arduino.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 #define STEPS_PER_ENCODER_TICK 32
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+extern Adafruit_SSD1306 display;
+
+extern int D_SCL;
+extern int D_SDA;   
+
 
 // Left Encoder
 extern int L_SW;
@@ -39,6 +51,7 @@ extern volatile int rightEncoderCalibratedState;
 
 
 
+
 // Interrupt service routine prototypes
 void leftEncoderISR();
 void rightEncoderISR();
@@ -67,5 +80,11 @@ void stopMotor(int pins[]);
 bool calibration();
 
 void instantControl(int swPin, const char* motorName, bool calibrationMode);
+
+//Display functions
+
+void setupDisplay();
+
+void updateDisplay(int leftCounter, int rightCounter, int automaticState, int syncState, int calibrationState);
 
 #endif

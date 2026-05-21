@@ -2,6 +2,7 @@
 #include "globals.h"
 
 
+
 //Left Encoder
 int L_SW = 14;
 int L_DT = 27;
@@ -23,10 +24,11 @@ int automaticButtonPin = 21;
 int ledPin = 2;
 int ldrPin = 34;
 
-int D_SCL = 13;
-int D_SDA = 25;
 
 //I2C
+int D_SCL = 13;
+int D_SDA = 25;
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 
 
@@ -148,6 +150,8 @@ void automaticControl() {
 void setup() {
     Serial.begin(115200);
 
+
+    setupDisplay();
     pinMode(ledPin, OUTPUT);
     pinMode(calibrateButtonPin, INPUT_PULLUP);
     pinMode(syncButtonPin, INPUT_PULLUP);
@@ -164,6 +168,12 @@ void setup() {
 }
 
 void loop() {
+
+
+
+
+
+
     //Calibration mode
     if (calibrationState == 0 || digitalRead(calibrateButtonPin) == LOW) {
       delay(50); // debounce
@@ -242,13 +252,18 @@ void loop() {
     rightTarget = rightCounter;
     interrupts();
 
+    updateDisplay(leftCounter, rightCounter, automaticState, syncState, calibrationState);
     
     updateBlindsState("left", leftTarget);
     updateBlindsState("right", rightTarget);
+
     
     updateMotor(leftTarget, leftStepperPins, "left");
     updateMotor(rightTarget, rightStepperPins, "right");
 
-    readSunlight();
+    
+
+  
 
 }
+

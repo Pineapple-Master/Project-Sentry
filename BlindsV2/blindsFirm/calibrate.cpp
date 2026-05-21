@@ -104,11 +104,14 @@ bool calibration() {
 	Serial.println("Starting calibration...");
 	flashLED();
 
+
 	bool oldSyncState = syncState;
 	syncState = false; // Disable synchronization during calibration
 
 	leftEncoderCalibratedState = 0;
 	rightEncoderCalibratedState = 0;
+	left_upper_bound = 1000000; // Reset bounds to default values
+	right_upper_bound = 1000000; // Reset bounds to default values
 	calibrateMotor("left", L_SW);
 	calibrateMotor("right", R_SW);
 	instantControl(L_SW, "left", true); // Move left blinds to closed position
