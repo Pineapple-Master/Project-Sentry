@@ -57,8 +57,7 @@ void updateDisplay(int leftCounter, int rightCounter, int automaticState, int sy
     int radius = 24;
 
     // ===== DRAW CIRCLES =====
-    display.drawCircle(leftCircleX, circleY, radius, SSD1306_WHITE);
-    display.drawCircle(rightCircleX, circleY, radius, SSD1306_WHITE);
+    
 
     // ===== PERCENT VALUES =====
     int leftPercent = map(leftCounter, 0, left_upper_bound, -100, 100);
@@ -69,27 +68,36 @@ void updateDisplay(int leftCounter, int rightCounter, int automaticState, int sy
     display.setTextColor(SSD1306_WHITE);
 
     // ===== LEFT TEXT =====
-
-    display.setCursor(5, 5);
-    display.print("L");
-
-
-
     String leftText = String(leftPercent) + "%";
 
     int leftWidth = leftText.length() * 6 * 2;
 
+    display.setTextSize(1);
+    display.setCursor(5, 5);
+    display.print("L");
+    display.setTextSize(2);
+
+    display.setCursor(
+        leftCircleX - (leftWidth / 2),
+        circleY - 8
+    );
 
     display.print(leftText);
 
     // ===== RIGHT TEXT =====
+    display.setTextSize(1);
     display.setCursor(118, 5);
     display.print("R");
+    display.setTextSize(2);
+
     String rightText = String(rightPercent) + "%";
 
     int rightWidth = rightText.length() * 6 * 2;
 
-   
+    display.setCursor(
+        rightCircleX - (rightWidth / 2),
+        circleY - 8
+    );
 
     display.print(rightText);
 
@@ -109,7 +117,7 @@ void updateDisplay(int leftCounter, int rightCounter, int automaticState, int sy
     display.print("Auto:");
 
     if (automaticState) {
-        display.print("ON");
+         display.print("ON");
     } else {
         display.print("OFF");
     }
